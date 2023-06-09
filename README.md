@@ -1,4 +1,4 @@
-# Running the Program
+## Running the Program
 To run the program, follow these steps:
 1. Make sure you have Go installed (version 1.13 and above).
 2. Clone the repository or copy the source code to a local directory.
@@ -27,15 +27,22 @@ Go standard packages for handling HTTP, JSON, CSV, and concurrency.
 Use of a mutex (sync.RWMutex) to ensure safe access to promotion data during updates.
 
 ## API
+
 The program provides the following API:
-GET /promotions/{id}
+
+### GET /promotions/{id}
+
 Returns information about a promotion based on the specified ID.
 
-Path Parameters:
-GET /promotions/{id}
-id - The ID of the promotion.
-Responses:
-200 OK: Returns the promotion information in JSON format.
-404 Not Found: If a promotion with the specified ID is not found.
+- Path Parameters:
+  - `id` - The ID of the promotion.
+
+- Responses:
+  - 200 OK: Returns the promotion information in JSON format.
+  - 404 Not Found: If a promotion with the specified ID is not found.
+
+## Updating Data
+
+Promotion data is automatically updated every 30 minutes from the `promotions.csv` CSV file. When updating the data, the mutex is locked, the data is read from the file, and the `promotionsMap` is updated with the promotion information. This ensures the freshness of the data when handling requests.
 
 
