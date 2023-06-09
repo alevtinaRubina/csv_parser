@@ -8,7 +8,6 @@ RUN go mod init localhost/promotions
 RUN go get github.com/gorilla/mux
 RUN go build -o main .
 
-# Copy the promotions.csv file
 COPY promotions.csv .
 
 EXPOSE 1321
