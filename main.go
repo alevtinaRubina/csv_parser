@@ -10,6 +10,7 @@ import (
 	"log"
 	"time"
 	"fmt"
+	"io"
 
 	"github.com/gorilla/mux"
 )
@@ -37,9 +38,15 @@ type PromotionResponse struct {
 func main() {
 	go func() {
 		for {
+			tempPromotionsMap, err := updateCsvData()
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			promotions.Lock()
-			updateCsvData()
+			promotions.promotionsMap = tempPromotionsMap
 			promotions.Unlock()
+
 			time.Sleep(30 * time.Minute)
 		}
 	}()
@@ -67,34 +74,39 @@ func getPromotion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func updateCsvData() {
+func updateCsvData() (map[string]Promotion, error) {
 	f, err := os.Open("./promotions.csv")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer f.Close()
 
-	lines, err := csv.NewReader(f).ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	promotions.promotionsMap = make(map[string]Promotion)
+	r := csv.NewReader(f)
+	tempPromotionsMap := make(map[string]Promotion)
 
 	const layout = "2006-01-02 15:04:05 -0700 MST"
-	for _, line := range lines {
+	for {
+		line, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
 		price, err := strconv.ParseFloat(line[1], 64)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		expirationDate, err := time.Parse(layout, line[2])
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
-		promotions.promotionsMap[line[0]] = Promotion{
+		tempPromotionsMap[line[0]] = Promotion{
 			ID:             line[0],
 			Price:          price,
 			ExpirationDate: expirationDate,
 		}
 	}
+	return tempPromotionsMap, nil
 }
