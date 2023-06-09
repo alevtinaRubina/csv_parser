@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"log"
 	"time"
+	"fmt"
 
 	"github.com/gorilla/mux"
 )
@@ -29,7 +30,7 @@ var promotions = PromotionMutex {
 
 type PromotionResponse struct {
     ID             string  `json:"id"`
-    Price          float64 `json:"price,string"`
+    Price          string `json:"price"`
     ExpirationDate string  `json:"expiration_date"`
 }
 
@@ -57,7 +58,7 @@ func getPromotion(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		response := PromotionResponse{
 			ID: promotion.ID,
-			Price: promotion.Price,
+			Price: fmt.Sprintf("%.2f", promotion.Price),
 			ExpirationDate: promotion.ExpirationDate.Format("2006-01-02 15:04:05"),
 		}
 		json.NewEncoder(w).Encode(response)
