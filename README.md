@@ -8,15 +8,15 @@ To run the program, follow these steps:
 docker build -t promotions .
 docker run -p 1312:1312 promotions
 ```
-5. The server will be available at http://localhost:1312.
+5. The server will be available at http://localhost:1312 (you can use another port, if you want. set the value in env file)
 
 ## Program Description
 This program is an example server implemented in the Go programming language that provides an API for retrieving information about promotions.
 
 # Functionality
 The program provides the following functionality:
-Retrieving information about a promotion based on its ID.
-Automatic updating of promotion data from a CSV file every 30 minutes.
+Retrieving information about a promotion based on its ID (info takes from promotions.csv file now, you can edit the path in env values)
+Automatic updating of promotion data from a CSV file every 30 minutes (you can edit this time in env file)
 Returning data in JSON format.
 
 # Implementation
