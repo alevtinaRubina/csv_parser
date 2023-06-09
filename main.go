@@ -11,7 +11,8 @@ import (
 	"time"
 	"fmt"
 	"io"
-
+	
+	"github.com/joho/godotenv"
 	"github.com/gorilla/mux"
 )
 
@@ -36,9 +37,19 @@ type PromotionResponse struct {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	csvFilePath := os.Getenv("CSV_FILE_PATH")
+	sleepTime := os.Getenv("SLEEP_TIME")
+	serverPort := os.Getenv("SERVER_PORT")
+	sleepDuration, err := time.ParseDuration(sleepTime)
+
 	go func() {
 		for {
-			tempPromotionsMap, err := updateCsvData()
+			tempPromotionsMap, err := updateCsvData(csvFilePath)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -47,13 +58,13 @@ func main() {
 			promotions.promotionsMap = tempPromotionsMap
 			promotions.Unlock()
 
-			time.Sleep(30 * time.Minute)
+			time.Sleep(sleepDuration)
 		}
 	}()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/promotions/{id}", getPromotion).Methods("GET")
-	http.ListenAndServe(":1312", r)
+	http.ListenAndServe(":"+serverPort, r)
 }
 
 func getPromotion(w http.ResponseWriter, r *http.Request) {
@@ -74,8 +85,8 @@ func getPromotion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func updateCsvData() (map[string]Promotion, error) {
-	f, err := os.Open("./promotions.csv")
+func updateCsvData(filePath string) (map[string]Promotion, error) {
+	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
